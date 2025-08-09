@@ -1,14 +1,17 @@
 const express = require('express');
 
 const app = express();
-
+const {userAuth} = require('./middleware/userAuth')
 // Order of routes is important in the routes
 
 
 // /getUser with multiple handlers
 
+app.use('/user', userAuth)
+
 app.get(
     "/getUser",
+    userAuth,                                      // inline middleware
     [(req, res, next) => {
       console.log("handling 1st handler");
       next()
