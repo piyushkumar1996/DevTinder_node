@@ -4,10 +4,10 @@ const app = express();
 const {userAuth} = require('./middleware/userAuth')
 // Order of routes is important in the routes
 
+// Adding auth middleware for all /user route
+app.use('/user', userAuth)
 
 // /getUser with multiple handlers
-
-app.use('/user', userAuth)
 
 app.get(
     "/getUser",
@@ -22,11 +22,16 @@ app.get(
     }]
   );
 
-app.get('/user', (req, res) => {
-    res.send({
-        "firstname": "Raj",
-        "lastname": "Kumar"
-    })
+app.get('/user', (req, res) => {                       // handling error in express server
+    try {
+        throw new Error('error oaccured')
+        res.send({
+            "firstname": "Raj",
+            "lastname": "Kumar"
+        })
+    }catch (err) {
+        res.status(500).send(`Something went wrong ${err}`)
+    }
 })
 
 app.get('/user/:userId', (req, res) => {
@@ -58,6 +63,12 @@ app.delete('/user', (req, res) => {
 
 app.use('/' , (req, res) => {
     res.send('This is the base url');
+})
+
+app.use('/', (err, req, res, next) => {                              // handling error in one place
+    if(err){
+        res.status(500).send("Something went wrong")
+    }
 })
 
 app.listen(7777, () => {
