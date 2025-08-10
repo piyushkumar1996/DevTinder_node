@@ -3,16 +3,10 @@ const { connectDb } = require("./config/database");
 const { UserModel } = require("./models/user");
 const app = express();
 
+app.use(express.json());
+
 app.post("/signup", async (req, res) => {
-  const userObj = {
-    firstName: "Shubham",
-    lastName: "kumar",
-    email: "shubham_kumar@gmail.com",
-    age: 25,
-  };
-
-  const user = new UserModel(userObj);
-
+  const user = new UserModel(req.body);
   try {
     await user.save();
     res.send("user added successfully!");
@@ -21,9 +15,60 @@ app.post("/signup", async (req, res) => {
   }
 });
 
-app.get("/user", (req, res) => {
-  console.log("user Data fetched");
-  res.send("user data----");
+app.get("/user", async (req, res) => {
+  const emailId = req.query.emailId;
+  try {
+    const users = await UserModel.find({ emailId });
+    if (users.length === 0) {
+      res.status(404).send("User not found");
+    } else {
+      res.send(users);
+    }
+  } catch (err) {
+    res.status(404).send("User not found");
+  }
+});
+
+app.get("/getFeeds", async (req, res) => {
+  try {
+    const users = await UserModel.find({});
+    res.send(users);
+  } catch (err) {
+    res.status(404).send("Users not found");
+  }
+});
+
+app.delete("/user", async (req, res) => {
+  const userId = req.query.id;
+  try {
+    const user = await UserModel.findByIdAndDelete(userId);
+    res.send("user deleted successfully");
+  } catch (err) {
+    res.status(500).send("Something went wrong");
+  }
+});
+
+app.patch("/user/:UserId", async (req, res) => {
+  const data = req.body;
+  const userId = req.params?.userId;
+
+  const ALLOWED_FIELDS = ["photoUrl", "about", "gender", "age", "skills"];
+  const isAllowedUpdate = Object.keys(data).every((k) =>
+    ALLOWED_FIELDS.includes(k)
+  );
+
+  try {
+    if (!isAllowedUpdate) {
+      throw new Error("Update not allowed");
+    }
+    const user = await UserModel.findByIdAndUpdate(userId, data, {
+      returnDocument: "after",
+      runValidators: true,
+    });
+    res.send("User data updated");
+  } catch (err) {
+    res.status(500).send("update failed" + err.message);
+  }
 });
 
 connectDb()
