@@ -2,11 +2,16 @@ const express = require("express");
 const { connectDb } = require("./config/database");
 const { UserModel } = require("./models/user");
 const { validateSignUpData } = require("./utils.js/validate");
+const cookieParser = require("cookie-parser");
+
+const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
 const app = express();
 
 app.use(express.json());
+
+app.use(cookieParser());
 
 app.post("/signup", async (req, res) => {
   try {
@@ -38,11 +43,38 @@ app.post("/login", async (req, res) => {
     if (!existingUser) {
       throw new Error("invalid credentials");
     }
-    const isValid = await bcrypt.compare(password, existingUser.password)
+    const isValid = await bcrypt.compare(password, existingUser.password);
     if (!isValid) {
       throw new Error("invalid credentials");
     }
+
+    const token = jwt.sign({ _id: existingUser._id }, "devTiner@68", {expiresIn: '2d'});
+
+    console.log("token is", token);
+    res.cookie("token", token, {
+      maxAge: 900000,
+      httpOnly: true,
+    });
     res.send("login successful");
+  } catch (err) {
+    res.status(401).send("Error is " + err.message);
+  }
+});
+
+app.get("/profile/:userId", async (req, res) => {
+  const { token } = req.cookies;
+  const { userId } = req.params;
+  try {
+    const decodeToken = jwt.verify(token, "devTiner@68");
+
+    if (decodeToken._id === userId ) {
+      const user = await UserModel.findOne({ _id: userId });
+      if (user) {
+        res.send(user);
+      } else {
+        throw new Error("not a valid request");
+      }
+    }
   } catch (err) {
     res.status(401).send("Error is " + err.message);
   }
