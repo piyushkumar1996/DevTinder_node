@@ -43,12 +43,15 @@ app.post("/login", async (req, res) => {
     if (!existingUser) {
       throw new Error("invalid credentials");
     }
-    const isValid = await bcrypt.compare(password, existingUser.password);
+    // const isValid = await bcrypt.compare(password, existingUser.password);
+    const isValid = await existingUser.veirfyPassword(password);
+
     if (!isValid) {
       throw new Error("invalid credentials");
     }
 
-    const token = jwt.sign({ _id: existingUser._id }, "devTiner@68", {expiresIn: '2d'});
+    const token = existingUser.getJWT();
+    // const token = jwt.sign({ _id: existingUser._id }, "devTiner@68", {expiresIn: '2d'});
 
     console.log("token is", token);
     res.cookie("token", token, {
@@ -57,6 +60,7 @@ app.post("/login", async (req, res) => {
     });
     res.send("login successful");
   } catch (err) {
+    res.clearCookie('token', { httpOnly: true });
     res.status(401).send("Error is " + err.message);
   }
 });
@@ -74,6 +78,8 @@ app.get("/profile/:userId", async (req, res) => {
       } else {
         throw new Error("not a valid request");
       }
+    }else {
+      throw new Error("not a valid id");
     }
   } catch (err) {
     res.status(401).send("Error is " + err.message);
