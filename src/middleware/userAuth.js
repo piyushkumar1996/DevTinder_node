@@ -1,14 +1,22 @@
-const userAuth = (req, res, next) => {
-    console.log('check authentication');
-    const token = 'xyz';
-    const isAuthorized = token === 'xyz';
-    if(!isAuthorized){
-        res.status(401).send('User is unauthorized');
-    }else {
-        next()
+const jwt = require("jsonwebtoken");
+const { UserModel } = require("../models/user");
+
+const userAuth = async (req, res, next) => {
+  try {
+    const { token } = req.cookies;
+    const decodedObj = jwt.verify(token, "devTiner@68");
+
+    const user = await UserModel.findOne({ _id: decodedObj._id });
+    if (!user) {
+      throw new Error("not a valid token");
     }
-}
+    req.user = user;
+    next();
+  } catch (err) {
+    res.status(401).send("Error is " + err.message);
+  }
+};
 
 module.exports = {
-    userAuth
-}
+  userAuth,
+};
