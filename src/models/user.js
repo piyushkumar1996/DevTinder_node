@@ -1,4 +1,4 @@
-const { mongoose } = require("mongoose");
+const mongoose = require("mongoose");
 const validator = require("validator");
 
 const jwt = require("jsonwebtoken");
@@ -9,12 +9,12 @@ const userSchema = new mongoose.Schema(
     firstName: {
       type: String,
       required: true,
-      minLength: 4,
+      minLength: 2,
       maxLength: 28,
     },
     lastName: {
       type: String,
-      minLength: 4,
+      minLength: 2,
       maxLength: 28,
     },
     emailId: {
@@ -56,6 +56,11 @@ const userSchema = new mongoose.Schema(
     },
     skills: {
       type: [String],
+      validate(skills) {
+        if (skills.length > 10) {
+          throw new Error("skills can not be more than 10");
+        }
+      },
     },
   },
   { timestamps: true }
@@ -66,7 +71,7 @@ userSchema.methods.getJWT = function () {
   return jwt.sign({ _id: user._id }, "devTiner@68", { expiresIn: "2d" });
 };
 
-userSchema.methods.veirfyPassword = async function (passwordInputByUser) {
+userSchema.methods.verifyPassword = async function (passwordInputByUser) {
   const user = this;
   const isValidPassword = await bcrypt.compare(
     passwordInputByUser,

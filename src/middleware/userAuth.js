@@ -1,10 +1,12 @@
 const jwt = require("jsonwebtoken");
 const { UserModel } = require("../models/user");
 
+const jwtApiKey = "devTiner@68";
+
 const userAuth = async (req, res, next) => {
   try {
     const { token } = req.cookies;
-    const decodedObj = jwt.verify(token, "devTiner@68");
+    const decodedObj = jwt.verify(token, jwtApiKey);
 
     const user = await UserModel.findOne({ _id: decodedObj._id });
     if (!user) {
