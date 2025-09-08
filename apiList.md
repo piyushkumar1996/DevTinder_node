@@ -11,10 +11,12 @@
 - PATCH /profile/pasword
 
 # connectRequestRouter
-- POST /request/send/interseted/:userId
-- POST /request/send/ignore/:userId
-- POST /request/send/accept/:userId
-- POST /request/send/reject/:userId
+- POST /connection/interseted/:userId
+- POST /connection/ignore/:userId
+
+
+- POST /connection/accept/:userId
+- POST /connection/reject/:userId
 
 # userRouer
 - GET /feeds - gets the profile of other users on the platform
