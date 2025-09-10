@@ -1,89 +1,22 @@
 const express = require("express");
 const { connectDb } = require("./config/database");
-const { UserModel } = require("./models/user");
-const { validateSignUpData } = require("./utils.js/validate");
 const cookieParser = require("cookie-parser");
-
-const bcrypt = require("bcrypt");
-const { userAuth } = require("./middleware/userAuth");
+// Routers
+const { authRouter } = require("./routes/authRouter");
+const { profileRouter } = require("./routes/profileRouter");
+const { connectionRouter } = require("./routes/connectionRouter");
+const { userRouter } = require("./routes/userRouter");
 
 const app = express();
 
 app.use(express.json());
-
 app.use(cookieParser());
 
-app.post("/signup", async (req, res) => {
-  try {
-    validateSignUpData(req);
-    const existingUser = await UserModel.findOne({ emailId: req.body.emailId });
-    if (existingUser) {
-      return res.status(400).send({ error: "Email already exists" });
-    }
-    const hashPassword = await bcrypt.hash(req.body.password, 10);
-    console.log("hash password", hashPassword);
-    const userDetail = {
-      ...req.body,
-      password: hashPassword,
-    };
-    const user = new UserModel(userDetail);
-    await user.save();
-    res.send("user added successfully!");
-  } catch (err) {
-    res.status(400).send("Error is: " + err.message);
-  }
-});
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", connectionRouter);
+app.use("/", userRouter);
 
-app.post("/login", async (req, res) => {
-  try {
-    const { emailId, password } = req.body;
-
-    const existingUser = await UserModel.findOne({ emailId });
-
-    if (!existingUser) {
-      throw new Error("invalid credentials");
-    }
-    // const isValid = await bcrypt.compare(password, existingUser.password);
-    const isValid = await existingUser.veirfyPassword(password);
-
-    if (!isValid) {
-      throw new Error("invalid credentials");
-    }
-
-    const token = existingUser.getJWT();
-    // const token = jwt.sign({ _id: existingUser._id }, "devTiner@68", {expiresIn: '2d'});
-
-    console.log("token is", token);
-    res.cookie("token", token, {
-      maxAge: 900000,
-      httpOnly: true,
-    });
-    res.send("login successful");
-  } catch (err) {
-    res.clearCookie('token', { httpOnly: true });
-    res.status(401).send("Error is " + err.message);
-  }
-});
-
-app.get("/profile/", userAuth, async (req, res) => {
-  try {
-    const { user } = req
-    res.send(user);
-
-  } catch (err) {
-    res.status(401).send("Error is " + err.message);
-  }
-});
-
-app.get("/sendConnectionRequest/", userAuth, async (req, res) => {
-  try {
-    const { user } = req
-    res.send(user);
-
-  } catch (err) {
-    res.status(401).send("Error is " + err.message);
-  }
-});
 
 connectDb()
   .then(() => {
@@ -95,7 +28,6 @@ connectDb()
   .catch((err) => {
     console.log(`Db connection not established ${err}`);
   });
-
 
 // app.get("/user", async (req, res) => {
 //   const emailId = req.query.emailId;
