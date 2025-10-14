@@ -1,7 +1,7 @@
 const express = require("express");
 const { userAuth } = require("../middleware/userAuth");
 const { connectionRequestModel } = require("../models/connectionRequest");
-const { UserModel } = require("../models/user");
+const { userModel } = require("../models/user");
 
 const connectionRouter = express.Router();
 
@@ -14,7 +14,7 @@ connectionRouter.post(
       const { user } = req;
       const fromUserId = user._id;
 
-      const isValidToUser = await UserModel.findOne({ _id: toUserId });
+      const isValidToUser = await userModel.findOne({ _id: toUserId });
 
       if (!isValidToUser) {
         return res.status(400).send("user not found");

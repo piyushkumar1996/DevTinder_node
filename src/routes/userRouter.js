@@ -1,6 +1,7 @@
 const express = require("express");
 const { userAuth } = require("../middleware/userAuth");
 const { connectionRequestModel } = require("../models/connectionRequest");
+const { userModel } = require("../models/user");
 
 const userRouter = express.Router();
 
@@ -57,6 +58,48 @@ userRouter.get("/user/requests/recieved", userAuth, async (req, res) => {
     });
   } catch (err) {
     res.status(500).send("Error is " + err.message);
+  }
+});
+
+userRouter.get("/user/feeds", userAuth, async (req, res) => {
+  try {
+    const loggedInUserId = req.user._id;
+    const page = parseInt(req.query.page) || 1;
+    let limit = parseInt(req.query.limit) || 4;
+    limit = Math.min(limit, 10)
+    const skip = (page - 1) * limit;
+
+    const connection = await connectionRequestModel.find(
+      {
+        fromUserId: loggedInUserId,
+      },
+      "toUserId"
+    );
+
+    const connectionMap = new Set();
+    connection.forEach((item) => {
+      connectionMap.add(item.toUserId.toString());
+    });
+    connectionMap.add(loggedInUserId);
+
+    const [users, total] = await Promise.all([
+      userModel
+        .find(
+          { _id: { $nin: Array.from(connectionMap) } },
+          "firstName lastName gender age"
+        )
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      userModel.countDocuments({ _id: { $nin: Array.from(connectionMap) } }),
+    ]);
+
+    return res.json({
+      data: { users, total },
+      message: "User feed data",
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 

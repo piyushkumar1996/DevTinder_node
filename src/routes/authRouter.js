@@ -1,7 +1,7 @@
 const express = require("express");
 const { validateSignUpData } = require("../utils.js/validate");
 
-const { UserModel } = require("../models/user");
+const { userModel } = require("../models/user");
 const bcrypt = require("bcrypt");
 
 const authRouter = express.Router();
@@ -9,7 +9,7 @@ const authRouter = express.Router();
 authRouter.post("/signup", async (req, res) => {
   try {
     validateSignUpData(req);
-    const existingUser = await UserModel.findOne({ emailId: req.body.emailId });
+    const existingUser = await userModel.findOne({ emailId: req.body.emailId });
     if (existingUser) {
       return res.status(400).send({ error: "Email already exists" });
     }
@@ -19,7 +19,7 @@ authRouter.post("/signup", async (req, res) => {
       ...req.body,
       password: hashPassword,
     };
-    const user = new UserModel(userDetail);
+    const user = new userModel(userDetail);
     await user.save();
     res.send("user added successfully!");
   } catch (err) {
@@ -31,7 +31,7 @@ authRouter.post("/login", async (req, res) => {
   try {
     const { emailId, password } = req.body;
 
-    const existingUser = await UserModel.findOne({ emailId });
+    const existingUser = await userModel.findOne({ emailId });
 
     if (!existingUser) {
       throw new Error("invalid credentials");

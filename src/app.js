@@ -32,7 +32,7 @@ connectDb()
 // app.get("/user", async (req, res) => {
 //   const emailId = req.query.emailId;
 //   try {
-//     const users = await UserModel.find({ emailId });
+//     const users = await userModel.find({ emailId });
 //     if (users.length === 0) {
 //       res.status(404).send("User not found");
 //     } else {
@@ -45,7 +45,7 @@ connectDb()
 
 // app.get("/getFeeds", async (req, res) => {
 //   try {
-//     const users = await UserModel.find({});
+//     const users = await userModel.find({});
 //     res.send(users);
 //   } catch (err) {
 //     res.status(404).send("Users not found");
@@ -55,7 +55,7 @@ connectDb()
 // app.delete("/user", async (req, res) => {
 //   const userId = req.query.id;
 //   try {
-//     const user = await UserModel.findByIdAndDelete(userId);
+//     const user = await userModel.findByIdAndDelete(userId);
 //     res.send("user deleted successfully");
 //   } catch (err) {
 //     res.status(500).send("Something went wrong");
@@ -75,7 +75,7 @@ connectDb()
 //     if (!isAllowedUpdate) {
 //       throw new Error("Update not allowed");
 //     }
-//     const user = await UserModel.findByIdAndUpdate(userId, data, {
+//     const user = await userModel.findByIdAndUpdate(userId, data, {
 //       returnDocument: "after",
 //       runValidators: true,
 //     });

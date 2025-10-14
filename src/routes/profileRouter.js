@@ -1,6 +1,6 @@
 const express = require("express");
 const { userAuth } = require("../middleware/userAuth");
-const { UserModel } = require("../models/user");
+const { userModel } = require("../models/user");
 const { validateEditProfile } = require("../utils.js/validate");
 const bcrypt = require("bcrypt");
 
@@ -20,7 +20,7 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
     if (!validateEditProfile(req)) {
       throw new Error("invalid req body");
     }
-    const updatedUser = await UserModel.findByIdAndUpdate(req.user._id, req.body, {
+    const updatedUser = await userModel.findByIdAndUpdate(req.user._id, req.body, {
       new: true,
       runValidators: true,
     });
