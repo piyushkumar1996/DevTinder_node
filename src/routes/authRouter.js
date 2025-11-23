@@ -51,7 +51,7 @@ authRouter.post("/login", async (req, res) => {
       maxAge: 900000,
       httpOnly: true,
     });
-    res.send("login successful");
+    res.send({message: "login successful", data: existingUser});
   } catch (err) {
     res.clearCookie("token", { httpOnly: true });
     res.status(401).send("Error is " + err.message);

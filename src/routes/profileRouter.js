@@ -6,7 +6,7 @@ const bcrypt = require("bcrypt");
 
 const profileRouter = express.Router();
 
-profileRouter.get("/profile/view", userAuth, async (req, res) => {
+profileRouter.get("/profile/user", userAuth, async (req, res) => {
   try {
     const { user } = req;
     res.send(user);
